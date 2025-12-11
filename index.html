@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Konbox</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Mona Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@300;400;500;600;700;800;900&display=swap">
+    <style>
+        body {
+            font-family: 'Mona Sans', sans-serif;
+        }
+
+        .bento-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            /* Base embossed effect */
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 1px 0 0 rgba(255, 255, 255, 0.4),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                inset -1px 0 0 rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .bento-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 0.06) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-6px) scale(1.025);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow:
+                inset 0 2px 0 rgba(255, 255, 255, 0.6),
+                inset 0 4px 8px rgba(255, 255, 255, 0.4),
+                inset 2px 0 0 rgba(255, 255, 255, 0.5),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.3),
+                inset -2px 0 0 rgba(0, 0, 0, 0.35),
+                0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .bento-card:hover::before {
+            opacity: 1;
+        }
+
+        .bento-card a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            width: 100%;
+            padding: 1.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
+        .dynamic-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--dynamic-overlay);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="bg-white min-h-screen p-4 md:p-8 flex flex-col">
+    <!-- Masonry container: responsive columns (1 on mobile, 2 on sm, 3 on lg) -->
+    <div id="masonry-container" class="flex flex-col sm:flex-row lg:flex-row gap-4 md:gap-6 w-full flex-1">
+        <!-- Columns will be populated by JS -->
+        <div class="column flex flex-col gap-4 flex-1 min-w-0"></div>
+        <div class="column flex flex-col gap-4 flex-1 min-w-0 hidden sm:block"></div>
+        <div class="column flex flex-col gap-4 flex-1 min-w-0 hidden lg:block"></div>
+    </div>
+
+    <!-- Hidden cards to be distributed by JS -->
+    <div style="display: none;">
+        <div class="bento-card" data-href="textcase.html" data-text="TextCase" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="bento.html" data-text="Bento" data-text-size="text-xl md:text-2xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="cloudword.html" data-text="CloudWord" data-text-size="text-xl md:text-2xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="gridify.html" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+        <div class="bento-card" data-href="#" data-text="Link" data-text-size="text-2xl md:text-4xl">
+            <a href="#" class=""></a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const container = document.getElementById('masonry-container');
+            const hiddenCardsContainer = container.nextElementSibling;
+            const cards = Array.from(hiddenCardsContainer.querySelectorAll('.bento-card'));
+
+            // Shuffle cards for randomness
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+
+            // Get columns based on screen size (simulate responsive)
+            const getColumns = () => {
+                if (window.innerWidth < 640) return [container.children[0]]; // 1 col mobile
+                if (window.innerWidth < 1024) return [container.children[0], container.children[1]]; // 2 col sm+
+                return Array.from(container.children); // 3 col lg+
+            };
+
+            const columns = getColumns();
+
+            cards.forEach(card => {
+                // Apply dynamic styles (color, border, overlay, text color, radius)
+                const hue = Math.floor(Math.random() * 360);
+                const saturation = 35 + Math.random() * 25; // 35-60%
+                const baseLightness = 50 + Math.random() * 30; // 50-80%
+
+                const bgColor = `hsl(${hue}, ${saturation}%, ${baseLightness}%)`;
+                card.style.backgroundColor = bgColor;
+
+                const borderSat = Math.max(10, saturation - 15);
+                const borderLight = Math.min(90, baseLightness + 15);
+                card.style.borderColor = `hsl(${hue}, ${borderSat}%, ${borderLight}%)`;
+
+                const overlayGradient = `linear-gradient(135deg, hsla(${hue}, ${saturation}%, 80%, 0.15) 0%, hsla(${hue}, ${saturation}%, 20%, 0.1) 100%)`;
+                card.style.setProperty('--dynamic-overlay', overlayGradient);
+
+                // Add dynamic overlay div
+                let overlay = card.querySelector('.dynamic-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'dynamic-overlay';
+                    card.appendChild(overlay);
+                }
+
+                // Hover events
+                card.addEventListener('mouseenter', () => { overlay.style.opacity = '1'; });
+                card.addEventListener('mouseleave', () => { overlay.style.opacity = '0'; });
+
+                // Text color based on brightness
+                const perceivedBrightness = baseLightness + saturation * 0.5;
+                const link = card.querySelector('a');
+                link.style.color = perceivedBrightness > 70 ? '#000' : '#fff';
+
+                // Set text content and size from data attrs
+                const href = card.dataset.href;
+                const text = card.dataset.text;
+                const textSize = card.dataset.textSize;
+                link.href = href;
+                link.className = textSize;
+                link.textContent = text;
+
+                // Random height for masonry variety (120px to 400px, responsive)
+                const minHeight = window.innerWidth < 640 ? 100 : 140;
+                const maxHeight = window.innerWidth < 640 ? 250 : 400;
+                const randomHeight = minHeight + Math.random() * (maxHeight - minHeight);
+                card.style.height = `${randomHeight}px`;
+
+                // Optional random border radius variation
+                const radiusVariations = ['rounded-2xl', 'rounded-3xl', 'rounded-xl', 'rounded-4xl'];
+                const randomRadius = radiusVariations[Math.floor(Math.random() * radiusVariations.length)];
+                card.classList.add(randomRadius);
+            });
+
+            // Distribute cards to columns (Pinterest-style: append to shortest column)
+            cards.forEach(card => {
+                let shortestCol = columns[0];
+                let shortestHeight = shortestCol.scrollHeight;
+
+                columns.forEach(col => {
+                    const colHeight = col.scrollHeight;
+                    if (colHeight < shortestHeight) {
+                        shortestHeight = colHeight;
+                        shortestCol = col;
+                    }
+                });
+
+                shortestCol.appendChild(card);
+            });
+
+            // Re-run on resize for responsiveness
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // Simple re-layout: clear and redistribute
+                    columns.forEach(col => col.innerHTML = '');
+                    const newColumns = getColumns();
+                    cards.forEach(card => {
+                        let shortestCol = newColumns[0];
+                        let shortestHeight = shortestCol.scrollHeight;
+                        newColumns.forEach(col => {
+                            const colHeight = col.scrollHeight;
+                            if (colHeight < shortestHeight) {
+                                shortestHeight = colHeight;
+                                shortestCol = col;
+                            }
+                        });
+                        shortestCol.appendChild(card);
+                    });
+                }, 250);
+            });
+        });
+    </script>
+</body>
+
+</html>

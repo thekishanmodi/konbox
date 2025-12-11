@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Race Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #333;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        canvas {
+            border: 2px solid white;
+            background-color: #1a1a1a;
+        }
+        #gameOver {
+            font-size: 48px;
+            color: white;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+            margin-top: 20px;
+        }
+        #restartButton {
+            font-size: 24px;
+            padding: 10px 20px;
+            background-color: #00BFFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            display: none;
+            margin-top: 20px;
+        }
+        #restartButton:hover {
+            background-color: #009ACD;
+        }
+        #timeCounter {
+            font-size: 24px;
+            color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="gameOver">Game Over!</div>
+    <button id="restartButton">Restart</button>
+    <div id="timeCounter">Time: 0s</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const restartButton = document.getElementById('restartButton');
+        const gameOverText = document.getElementById('gameOver');
+        const timeCounter = document.getElementById('timeCounter');
+
+        const carWidth = 50;
+        const carHeight = 100;
+        let carX = canvas.width / 2 - carWidth / 2;
+        let carY = canvas.height - carHeight - 10;
+        let carSpeed = 5;
+        let leftPressed = false;
+        let rightPressed = false;
+        let upPressed = false;
+        let downPressed = false;
+
+        const obstacles = [];
+        const obstacleWidth = 50;
+        const obstacleHeight = 100;
+        let obstacleSpeed = 2;
+
+        let gameOver = false;
+        let gameTime = 0;  // Time counter in seconds
+        let timeInterval;
+
+        document.addEventListener('keydown', keyDownHandler, false);
+        document.addEventListener('keyup', keyUpHandler, false);
+        restartButton.addEventListener('click', restartGame, false);
+
+        function keyDownHandler(e) {
+            if (e.key == "ArrowLeft" || e.key == "a") {
+                leftPressed = true;
+            }
+            if (e.key == "ArrowRight" || e.key == "d") {
+                rightPressed = true;
+            }
+            if (e.key == "ArrowUp" || e.key == "w") {
+                upPressed = true;
+            }
+            if (e.key == "ArrowDown" || e.key == "s") {
+                downPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.key == "ArrowLeft" || e.key == "a") {
+                leftPressed = false;
+            }
+            if (e.key == "ArrowRight" || e.key == "d") {
+                rightPressed = false;
+            }
+            if (e.key == "ArrowUp" || e.key == "w") {
+                upPressed = false;
+            }
+            if (e.key == "ArrowDown" || e.key == "s") {
+                downPressed = false;
+            }
+        }
+
+        function drawCar() {
+            ctx.fillStyle = '#FF5733';
+            ctx.fillRect(carX, carY, carWidth, carHeight);
+        }
+
+        function createObstacle() {
+            const x = Math.floor(Math.random() * (canvas.width - obstacleWidth));
+            obstacles.push({x: x, y: -obstacleHeight});
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = '#00BFFF';
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                ctx.fillRect(obstacle.x, obstacle.y, obstacleWidth, obstacleHeight);
+            }
+        }
+
+        function moveObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].y += obstacleSpeed;
+            }
+        }
+
+        function detectCollisions() {
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                if (
+                    carX < obstacle.x + obstacleWidth &&
+                    carX + carWidth > obstacle.x &&
+                    carY < obstacle.y + obstacleHeight &&
+                    carY + carHeight > obstacle.y
+                ) {
+                    gameOver = true;
+                    showGameOver();
+                    break;
+                }
+            }
+        }
+
+        function showGameOver() {
+            gameOverText.style.display = 'block';
+            restartButton.style.display = 'block';
+            clearInterval(timeInterval);  // Stop the time counter
+        }
+
+        function restartGame() {
+            gameOver = false;
+            carX = canvas.width / 2 - carWidth / 2;
+            carY = canvas.height - carHeight - 10;
+            obstacles.length = 0;
+            carSpeed = 5;
+            obstacleSpeed = 2;
+            gameTime = 0;
+            timeCounter.innerText = `Time: ${gameTime}s`;
+            gameOverText.style.display = 'none';
+            restartButton.style.display = 'none';
+            update();
+            timeInterval = setInterval(updateTime, 1000); // Start the time counter
+        }
+
+        function updateTime() {
+            gameTime++;
+            timeCounter.innerText = `Time: ${gameTime}s`;
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Increase the car speed every 10 seconds
+            if (gameTime % 10 === 0 && gameTime > 0) {
+                carSpeed += 0.1;
+                obstacleSpeed += 0.1;
+            }
+
+            if (leftPressed && carX > 0) {
+                carX -= carSpeed;
+            }
+            if (rightPressed && carX < canvas.width - carWidth) {
+                carX += carSpeed;
+            }
+            if (upPressed && carY > 0) {
+                carY -= carSpeed;
+            }
+            if (downPressed && carY < canvas.height - carHeight) {
+                carY += carSpeed;
+            }
+
+            moveObstacles();
+            detectCollisions();
+            drawCar();
+            drawObstacles();
+
+            if (Math.random() < 0.02) {
+                createObstacle();
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        timeInterval = setInterval(updateTime, 1000); // Start the time counter
+        update();
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<html>
+<head></head>
+<style type="text/css">
+	body {
+	    text-align: center;
+	    font-size: 100px;
+	    font-weight: bold;
+	    display: table;
+	    margin: auto;
+	    height: 100%;
+	     font-family: sans-serif;
+	}
+
+	body span {
+	    display: table-cell;
+	    vertical-align: middle;
+	}
+</style>
+<body>
+<span>BG-COLOR</span>
+</body>
+<script>
+var color = new Array();
+color[0] = "#f63000";
+color[1] = "#cc0500";
+color[2] = "#0100a3";
+color[3] = "#ffea00";
+
+function changeColor()
+{
+  var randomColor = Math.floor(Math.random() * color.length);
+  console.log(color[randomColor]);
+    document.getElementsByTagName("body")[0].style.backgroundColor=color[randomColor];
+};
+
+changeColor();  // do this in window.onload !!  window.onload(changeColor)
+</script>
+</html>

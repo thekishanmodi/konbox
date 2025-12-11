@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shot Bubble Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #000;
+        }
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 24px;
+            display: none;
+        }
+        #restartBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOver">
+        <p>Game Over! You didn't reach the target.</p>
+        <button id="restartBtn">Restart</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const gameOverDiv = document.getElementById("gameOver");
+        const restartBtn = document.getElementById("restartBtn");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Game variables
+        const bubbles = [];
+        const bubbleRadius = 30;
+        let score = 0;
+        let shooting = false;
+        let shotX = canvas.width / 2;
+        let shotY = canvas.height - 50;
+        let shotRadius = 5;
+        let shotSpeed = 10;
+        let rotationAngle = 0;
+        let bubbleSpeed = 2;
+        let lastTime = Date.now();
+        let cursorX = canvas.width / 2;
+        let cursorY = canvas.height / 2;
+
+        const targetScore = 20;  // Target score to reach
+        const timerLimit = 30;   // Timer limit in seconds (minimum 30 seconds)
+        let timeRemaining = timerLimit;
+        let gameOver = false;
+        let lastTimerUpdate = Date.now(); // Timestamp for timer updates
+
+        // Create bubbles with random movement
+        function createBubble() {
+            const x = Math.random() * (canvas.width - bubbleRadius * 2) + bubbleRadius;
+            const y = Math.random() * (canvas.height - bubbleRadius * 2) + bubbleRadius;
+            const dx = (Math.random() - 0.5) * bubbleSpeed;
+            const dy = (Math.random() - 0.5) * bubbleSpeed;
+            bubbles.push({ x, y, dx, dy });
+        }
+
+        // Move and draw bubbles
+        function moveAndDrawBubbles() {
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < bubbles.length; i++) {
+                bubbles[i].x += bubbles[i].dx;
+                bubbles[i].y += bubbles[i].dy;
+
+                // Bounce off walls
+                if (bubbles[i].x + bubbleRadius > canvas.width || bubbles[i].x - bubbleRadius < 0) {
+                    bubbles[i].dx = -bubbles[i].dx;
+                }
+                if (bubbles[i].y + bubbleRadius > canvas.height || bubbles[i].y - bubbleRadius < 0) {
+                    bubbles[i].dy = -bubbles[i].dy;
+                }
+
+                // Draw the bubble
+                ctx.beginPath();
+                ctx.arc(bubbles[i].x, bubbles[i].y, bubbleRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Shoot the bubble along the rotated pipe direction
+        function shootBubble() {
+            if (shooting) {
+                const shotDx = Math.cos(rotationAngle) * shotSpeed;
+                const shotDy = Math.sin(rotationAngle) * shotSpeed;
+
+                shotX += shotDx;
+                shotY += shotDy;
+
+                ctx.beginPath();
+                ctx.arc(shotX, shotY, shotRadius, 0, Math.PI * 2);
+                ctx.fillStyle = "red";
+                ctx.fill();
+
+                // Check for collision with bubbles
+                for (let i = 0; i < bubbles.length; i++) {
+                    const dist = Math.hypot(bubbles[i].x - shotX, bubbles[i].y - shotY);
+                    if (dist < bubbleRadius + shotRadius) {
+                        bubbles.splice(i, 1);
+                        score++;
+                        shooting = false;
+                        shotX = canvas.width / 2;
+                        shotY = canvas.height - 50;
+                    }
+                }
+
+                // Stop the shot if it goes out of the canvas
+                if (shotX < 0 || shotX > canvas.width || shotY < 0 || shotY > canvas.height) {
+                    shooting = false;
+                    shotX = canvas.width / 2;
+                    shotY = canvas.height - 50;
+                }
+            }
+        }
+
+        // Draw the score
+        function drawScore() {
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Score: " + score, 20, 40);
+        }
+
+        // Draw the timer
+        function drawTimer() {
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "black";
+            ctx.fillText("Time: " + timeRemaining, canvas.width - 100, 40);
+        }
+
+        // Draw the rotating pipe for shooting and direction line
+        function drawPipe() {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height - 50);
+            ctx.rotate(rotationAngle);
+            ctx.fillStyle = "black";
+            ctx.fillRect(-2, 0, 4, 50);  // vertical pipe for shooting
+
+            // Draw the direction line
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(200, 0);  // extend line in the direction of the pipe
+            ctx.strokeStyle = "green";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Increase bubble speed over time
+        function increaseBubbleSpeed() {
+            const currentTime = Date.now();
+            const timeElapsed = (currentTime - lastTime) / 1000; // time in seconds
+            if (timeElapsed > 1) {
+                bubbleSpeed += 0.05;  // Increase bubble speed every second
+                lastTime = currentTime;
+            }
+        }
+
+        // Timer countdown - Update timer once per second
+        function updateTimer() {
+            const currentTime = Date.now();
+            if (currentTime - lastTimerUpdate >= 1000) {
+                lastTimerUpdate = currentTime;
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                } else if (!gameOver) {
+                    endGame();
+                }
+            }
+        }
+
+        // Game over function
+        function endGame() {
+            gameOver = true;
+            gameOverDiv.style.display = "block";
+        }
+
+        // Event listeners for mouse click to shoot
+        canvas.addEventListener("click", function (event) {
+            if (!shooting && !gameOver) {
+                shooting = true;
+                shotX = canvas.width / 2;
+                shotY = canvas.height - 50;
+            }
+        });
+
+        // Event listeners for mouse movement to rotate the pipe
+        canvas.addEventListener("mousemove", function (event) {
+            cursorX = event.clientX;
+            cursorY = event.clientY;
+            
+            // Calculate angle between pipe and cursor
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height - 50;
+            const dx = cursorX - centerX;
+            const dy = cursorY - centerY;
+            rotationAngle = Math.atan2(dy, dx);
+        });
+
+        // Restart the game
+        restartBtn.addEventListener("click", function() {
+            score = 0;
+            timeRemaining = timerLimit;
+            gameOver = false;
+            bubbles.length = 0;
+            gameOverDiv.style.display = "none";
+            setInterval(createBubble, 1500); // Create new bubbles every 1.5 seconds
+            gameLoop();
+        });
+
+        // Main game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            moveAndDrawBubbles();
+            shootBubble();
+            drawPipe();
+            drawScore();
+            drawTimer();
+            increaseBubbleSpeed();
+            updateTimer();
+            
+            // Check if target score is reached
+            if (score >= targetScore) {
+                endGame();
+                alert("You reached the target score! Game Over!");
+            }
+
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Set up the game
+        setInterval(createBubble, 1500); // Create new bubbles every 1.5 seconds
+        gameLoop();
+    </script>
+</body>
+</html>

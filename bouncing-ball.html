@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bouncing Ball Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #34e89e, #0f9b8e);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            background-color: #222222;
+            border: 2px solid #000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+        .game-over-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #ffffff;
+            text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.7);
+            display: none;
+        }
+        .restart-button {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            font-size: 22px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .restart-button:hover {
+            background-color: #e55347;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .restart-button:active {
+            transform: translateX(-50%) scale(0.98);
+        }
+        .time-counter {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #ffffff;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="game-over-text" id="gameOverText">GAME OVER</div>
+    <button class="restart-button" id="restartButton">Restart Game</button>
+    <div class="time-counter" id="timeCounter">Time: 0</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameOverText = document.getElementById('gameOverText');
+        const restartButton = document.getElementById('restartButton');
+        const timeCounter = document.getElementById('timeCounter');
+
+        let canvasWidth = window.innerWidth;
+        let canvasHeight = window.innerHeight;
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // Ball settings
+        const ballRadius = 12;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height - 30;
+        let ballDX = 3;
+        let ballDY = -3;
+
+        // Paddle settings (start length 200px)
+        let paddleHeight = 12;
+        let paddleWidth = 200;  // Start with 200px paddle length
+        let paddleX = (canvas.width - paddleWidth) / 2;
+        let rightPressed = false;
+        let leftPressed = false;
+
+        // Game settings
+        let isGameOver = false;
+        let speedIncreaseFactor = 0.1;
+        let speedIncreaseRate = 0.01;
+        let timeElapsed = 0;  // Time counter in seconds
+        let lastTime = Date.now();  // For time tracking
+
+        // Listen for key events
+        document.addEventListener('keydown', keyDownHandler, false);
+        document.addEventListener('keyup', keyUpHandler, false);
+        restartButton.addEventListener('click', restartGame, false);
+
+        // Adjust canvas size when window is resized
+        window.addEventListener('resize', resizeCanvas, false);
+
+        function resizeCanvas() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            paddleX = (canvas.width - paddleWidth) / 2;
+        }
+
+        function keyDownHandler(e) {
+            if (e.keyCode == 39) { // Right arrow
+                rightPressed = true;
+            } else if (e.keyCode == 37) { // Left arrow
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.keyCode == 39) { // Right arrow
+                rightPressed = false;
+            } else if (e.keyCode == 37) { // Left arrow
+                leftPressed = false;
+            }
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff6347'; // Ball color
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = '#32cd32'; // Paddle color (green)
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function collisionDetection() {
+            if (ballY + ballDY > canvas.height - ballRadius - paddleHeight &&
+                ballX > paddleX && ballX < paddleX + paddleWidth) {
+                ballDY = -ballDY;
+                // Increase speed after every paddle bounce
+                ballDX += (ballDX > 0 ? speedIncreaseFactor : -speedIncreaseFactor);
+                ballDY += (ballDY > 0 ? speedIncreaseFactor : -speedIncreaseFactor);
+            }
+        }
+
+        function updateTimeCounter() {
+            const currentTime = Date.now();
+            timeElapsed = Math.floor((currentTime - lastTime) / 1000);  // Seconds passed
+            timeCounter.textContent = `Time: ${timeElapsed}`;
+        }
+
+        function draw() {
+            if (isGameOver) {
+                gameOverText.style.display = 'block';
+                restartButton.style.display = 'inline-block';
+                return;
+            }
+
+            // Update time counter
+            updateTimeCounter();
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the ball
+            drawBall();
+            // Draw the paddle
+            drawPaddle();
+            // Handle collision with the paddle
+            collisionDetection();
+
+            // Ball movement
+            ballX += ballDX;
+            ballY += ballDY;
+
+            // Ball bouncing logic
+            if (ballX + ballDX > canvas.width - ballRadius || ballX + ballDX < ballRadius) {
+                ballDX = -ballDX;
+            }
+            if (ballY + ballDY < ballRadius) {
+                ballDY = -ballDY;
+            } else if (ballY + ballDY > canvas.height - ballRadius) {
+                // Game over condition
+                if (ballX > paddleX && ballX < paddleX + paddleWidth) {
+                    ballDY = -ballDY;
+                    // Increase speed after every paddle bounce
+                    ballDX += (ballDX > 0 ? speedIncreaseFactor : -speedIncreaseFactor);
+                    ballDY += (ballDY > 0 ? speedIncreaseFactor : -speedIncreaseFactor);
+                } else {
+                    isGameOver = true;
+                }
+            }
+
+            // Paddle movement
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 8; // Paddle speed
+            } else if (leftPressed && paddleX > 0) {
+                paddleX -= 8; // Paddle speed
+            }
+
+            // Gradually decrease paddle length by 5px per second
+            paddleWidth = Math.max(50, 200 - timeElapsed * 5); // Decrease length but don't let it go below 50px
+
+            // Gradually increase ball speed over time
+            ballDX += (ballDX > 0 ? speedIncreaseRate : -speedIncreaseRate);
+            ballDY += (ballDY > 0 ? speedIncreaseRate : -speedIncreaseRate);
+
+            // Request new animation frame
+            requestAnimationFrame(draw);
+        }
+
+        function restartGame() {
+            // Reset variables
+            ballX = canvas.width / 2;
+            ballY = canvas.height - 30;
+            ballDX = 3;
+            ballDY = -3;
+            paddleWidth = 200;  // Reset paddle length
+            paddleX = (canvas.width - paddleWidth) / 2;
+            rightPressed = false;
+            leftPressed = false;
+            isGameOver = false;
+            timeElapsed = 0;
+            lastTime = Date.now();
+            gameOverText.style.display = 'none';
+            restartButton.style.display = 'none';
+
+            // Restart the game
+            draw();
+        }
+
+        // Start the game
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Word Cloud</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #chart {
+      width: 1400px;
+      height: 800px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="chart"></div>
+
+  <script>
+    const chart = echarts.init(document.getElementById('chart'));
+
+    // ==========================================
+    // EXTENDED DATA LIST — 100+ WORD ITEMS
+    // ==========================================
+    const data = [
+
+      // Large Projects
+      { name: "Lakeside Habitat", value: 500 },
+      { name: "Golfshire", value: 450 },
+      { name: "White Meadows", value: 420 },
+      { name: "Park Ridge", value: 380 },
+      { name: "Elm Park", value: 340 },
+      { name: "Boulevard", value: 300 },
+      { name: "Pine Forest", value: 260 },
+      { name: "Glenwood", value: 230 },
+      { name: "Royale Gardens", value: 200 },
+      { name: "Raintree Park", value: 180 },
+      { name: "Serenity Shores", value: 150 },
+      { name: "Lavender Fields", value: 140 },
+      { name: "Augusta Golf Village", value: 130 },
+      { name: "Lake Ridge", value: 120 },
+      { name: "Falcon City", value: 100 },
+      { name: "Jindal City", value: 90 },
+      { name: "Woodside", value: 80 },
+      { name: "Meridian Park", value: 70 },
+      { name: "Eden Park", value: 60 },
+      { name: "Aspen Greens", value: 50 },
+      { name: "Ocean Towers", value: 45 },
+      { name: "City Bellandur", value: 40 },
+      { name: "Great Acres", value: 38 },
+      { name: "Southern Star", value: 35 },
+      { name: "Park Grove", value: 30 },
+      { name: "Marigold", value: 25 },
+      { name: "Waterford", value: 20 },
+      { name: "Primrose Hills", value: 15 },
+
+      // NEW PROJECTS Added
+      { name: "Shantiniketan", value: 210 },
+      { name: "Tech Vista", value: 185 },
+      { name: "Oasis", value: 160 },
+      { name: "Ivy League", value: 120 },
+      { name: "Garden Bay", value: 140 },
+      { name: "Aquila Heights", value: 110 },
+      { name: "Song of South", value: 175 },
+      { name: "North Ridge", value: 95 },
+      { name: "Alta Vista", value: 135 },
+      { name: "Misty Waters", value: 125 },
+
+      // Price Tags
+      { name: "₹95 Lakh", value: 90 },
+      { name: "₹1.3 Cr", value: 110 },
+      { name: "₹1.8 Cr", value: 130 },
+      { name: "₹2.5 Cr", value: 150 },
+      { name: "₹3.2 Cr", value: 160 },
+      { name: "₹4.5 Cr Villa", value: 170 },
+      { name: "₹75 Lakh", value: 85 },
+      { name: "₹2.2 Cr", value: 145 },
+      { name: "₹55 Lakh", value: 70 },
+
+      // Locations
+      { name: "Whitefield", value: 140 },
+      { name: "Sarjapur Road", value: 150 },
+      { name: "Bannerghatta", value: 135 },
+      { name: "Yelahanka", value: 125 },
+      { name: "Hebbal", value: 110 },
+      { name: "Electronic City", value: 120 },
+      { name: "KR Puram", value: 105 },
+      { name: "Bellandur", value: 115 },
+      { name: "MG Road", value: 100 },
+
+      // Amenities (NEW)
+      { name: "Clubhouse", value: 95 },
+      { name: "Swimming Pool", value: 100 },
+      { name: "Sky Deck", value: 85 },
+      { name: "Amphitheatre", value: 90 },
+      { name: "Kids Play Zone", value: 80 },
+      { name: "Jogging Track", value: 75 },
+      { name: "Senior Citizen Area", value: 70 },
+      { name: "Pet Park", value: 65 },
+      { name: "Health Club", value: 88 },
+      { name: "Yoga Deck", value: 60 },
+      { name: "Basketball Court", value: 95 },
+      { name: "Tennis Court", value: 100 },
+      { name: "Skating Rink", value: 55 },
+
+      // Features / Actions
+      { name: "Virtual Tour", value: 80 },
+      { name: "Payment Plan", value: 85 },
+      { name: "Floor Plans", value: 95 },
+      { name: "Brochure Download", value: 75 },
+      { name: "Site Visit", value: 88 },
+      { name: "Inventory Check", value: 92 },
+      { name: "Price Breakup", value: 70 },
+      { name: "Availability", value: 78 },
+      { name: "Submit Enquiry", value: 65 },
+      { name: "Master Plan", value: 90 },
+      { name: "Specifications", value: 85 },
+
+      // Views
+      { name: "Lake View", value: 70 },
+      { name: "Golf View", value: 75 },
+      { name: "City View", value: 60 },
+      { name: "Forest View", value: 65 },
+
+      // Generic Real Estate Keywords (NEW)
+      { name: "Luxury Homes", value: 130 },
+      { name: "Premium Towers", value: 115 },
+      { name: "Smart Homes", value: 98 },
+      { name: "Investment Property", value: 105 },
+      { name: "High Rise Living", value: 90 },
+      { name: "RERA Approved", value: 85 },
+      { name: "Early Bird Offer", value: 75 },
+      { name: "Pre-Launch", value: 70 },
+      { name: "New Launch", value: 78 },
+      { name: "Hot Deal", value: 65 }
+    ];
+
+    // Color Palette
+    const palette = ['#A88944', '#636E72', '#FF9F43', '#0984E3', '#00A5A1', '#009376', '#02662E', '#7C4792', '#B71C2A'];
+
+    data.forEach((d, index) => {
+      const colorIndex = Math.floor((d.value * 31 + index) % palette.length);
+      d.textStyle = { color: palette[colorIndex] };
+    });
+
+    // ==========================================
+    // WORD CLOUD SETTINGS
+    // ==========================================
+    const option = {
+      backgroundColor: '#ffffff',
+
+      series: [{
+        type: 'wordCloud',
+        shape: 'rect',
+        width: 1400,
+        height: 800,
+        gridSize: 8,
+        sizeRange: [14, 180],
+
+        rotationRange: [-90, 90],
+        rotationStep: 30,
+        rotate: function () {
+          if (Math.random() > 0.7) {
+            const angles = [-30, 30, -60, 60, 90, -90];
+            return angles[Math.floor(Math.random() * angles.length)];
+          }
+          return 0;
+        },
+
+        textStyle: {
+          fontFamily: "Montserrat, sans-serif",
+          fontWeight: "700",
+          emphasis: {
+            shadowBlur: 20,
+            shadowColor: "#A88944"
+          }
+        },
+
+        data: data
+      }]
+    };
+
+    chart.setOption(option);
+    window.onresize = chart.resize;
+  </script>
+</body>
+
+</html>
